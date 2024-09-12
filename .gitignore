@@ -1,0 +1,15 @@
+# Auto-Generated files
+bin/*
+obj/*
+.vs/*
+
+# Local setup
+*.bat
+*.pdn
+*.yml
+
+# Local files
+Api/_Releases/*
+Api/Models/*
+Scrap/_Releases/*
+Scrap/Models/*
