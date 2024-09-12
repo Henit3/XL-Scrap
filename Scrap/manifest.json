@@ -1,7 +1,7 @@
 {
   "name": "XL_Scrap",
   "version_number": "0.1.0",
-  "website_url": "",
+  "website_url": "https://github.com/Henit3/XL-Scrap",
   "description": "Adds example scrap too heavy for an employee to manage alone!",
   "dependencies": [
     "BepInEx-BepInExPack-5.4.2100",
