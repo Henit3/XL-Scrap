@@ -1,0 +1,66 @@
+ManifestFileVersion: 0
+CRC: 4132813781
+Hashes:
+  AssetFileHash:
+    serializedVersion: 2
+    Hash: ec0f3e352e91592f75d9e559b6a24d91
+  TypeTreeHash:
+    serializedVersion: 2
+    Hash: 45ce819ca211e50414a6f7e993e61142
+  IncrementalBuildHash:
+    serializedVersion: 2
+    Hash: ec0f3e352e91592f75d9e559b6a24d91
+HashAppended: 0
+ClassTypes:
+- Class: 1
+  Script: {instanceID: 0}
+- Class: 4
+  Script: {instanceID: 0}
+- Class: 21
+  Script: {instanceID: 0}
+- Class: 23
+  Script: {instanceID: 0}
+- Class: 28
+  Script: {instanceID: 0}
+- Class: 33
+  Script: {instanceID: 0}
+- Class: 43
+  Script: {instanceID: 0}
+- Class: 48
+  Script: {instanceID: 0}
+- Class: 65
+  Script: {instanceID: 0}
+- Class: 82
+  Script: {instanceID: 0}
+- Class: 114
+  Script: {fileID: -1787465788, guid: 9d96be39763fce04387fa7cef995c3cf, type: 3}
+- Class: 114
+  Script: {fileID: -194780425, guid: 9d96be39763fce04387fa7cef995c3cf, type: 3}
+- Class: 114
+  Script: {fileID: 2024385392, guid: 9d96be39763fce04387fa7cef995c3cf, type: 3}
+- Class: 114
+  Script: {fileID: -1632364010, guid: 25e888919567a964c89978917e1116f7, type: 3}
+- Class: 114
+  Script: {fileID: 11500000, guid: c30496d6ae6d6f907456e10a94e01ec6, type: 3}
+- Class: 114
+  Script: {fileID: 11500000, guid: 3c36d0a92cbb1f26a39169ef0eae393a, type: 3}
+- Class: 114
+  Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+- Class: 115
+  Script: {instanceID: 0}
+- Class: 213
+  Script: {instanceID: 0}
+- Class: 241
+  Script: {instanceID: 0}
+- Class: 243
+  Script: {instanceID: 0}
+- Class: 245
+  Script: {instanceID: 0}
+SerializeReferenceClassIdentifiers:
+- AssemblyName: Assembly-CSharp
+  ClassName: Battery
+- AssemblyName: LethalLevelLoader
+  ClassName: LethalLevelLoader.StringWithRarity
+Assets:
+- Assets/XlScrap/Xl_Scrap.asset
+Dependencies: []
