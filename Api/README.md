@@ -2,6 +2,8 @@
 
 This mod is an API to allow modders to add items designed to be lifted by multiple players at once.
 
+<br/><img alt="Example of XL Scrap" src="./holding_xl.png" height="400"/>
+
 ### Compatibility
 
 Works with v64 of Lethal Company, and is required by all clients.
