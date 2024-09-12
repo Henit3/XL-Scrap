@@ -2,7 +2,7 @@
 
 This mod is an API to allow modders to add items designed to be lifted by multiple players at once.
 
-<br/><img alt="Example of XL Scrap" src="./holding_xl.png" height="400"/>
+<br/><img alt="Example of XL Scrap" src="https://raw.githubusercontent.com/Henit3/XL-Scrap/master/Api/holding_xl.png" height="400"/>
 
 ### Compatibility
 
