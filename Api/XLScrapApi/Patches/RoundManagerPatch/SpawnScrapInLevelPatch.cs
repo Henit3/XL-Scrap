@@ -1,4 +1,4 @@
-﻿using HarmonyLib;
+using HarmonyLib;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection.Emit;
@@ -28,7 +28,6 @@ public class SpawnScrapInLevelPatch
         if (component is not XLMainItem xlItem) return true;
         if (!xlItem.CorrectToValidPosition()) return InvalidateXlSpawn(component);
 
-        _failedSpawnAttempts = 0;
         return true;
     }
 
@@ -36,7 +35,7 @@ public class SpawnScrapInLevelPatch
     {
         // Invalid position so destroy the object and mark to continue
         Object.Destroy(component.gameObject);
-        Plugin.Logger.LogWarning($"XL Spawn failed!");
+        Plugin.Logger.LogWarning($"XL Spawn failed! ({_failedSpawnAttempts})");
         return false;
     }
 
@@ -96,6 +95,7 @@ public class SpawnScrapInLevelPatch
         // Match at first usage of intList1 (after initialisation of the object)
         // To add a label to branch to if XL spawn handling is not invoked
         matcher.MatchForward(false, [new(OpCodes.Ldloc_3)]);
+        matcher.MatchBack(false, [new(OpCodes.Ldloc_2)]);
         var continueSpawnTarget = generator.DefineLabel();
         matcher.AddLabelsAt(matcher.Pos, [continueSpawnTarget]);
 

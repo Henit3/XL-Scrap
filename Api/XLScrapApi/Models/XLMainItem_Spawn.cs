@@ -9,6 +9,10 @@ public partial class XLMainItem : PhysicsProp
 {
     private const float MaxSpawnDiff = 20f;
     private const int MaxFailedCorrectionAttempts = 3;
+    private static int HolderLinecastMask
+    {
+        get => StartOfRound.Instance.collidersAndRoomMaskAndDefault;
+    }
 
     public bool CorrectToValidPosition()
     {
@@ -19,7 +23,12 @@ public partial class XLMainItem : PhysicsProp
         {
             var realAnchors = Anchors.Select(a => a + transform.position).ToList();
 
-            if (CheckValidPosition(realAnchors, out var correction)) return true;
+            if (CheckValidPosition(realAnchors, out var correction))
+            {
+                Plugin.Logger.LogDebug($"Valid spawn at {transform.position}");
+                return true;
+            }
+            Plugin.Logger.LogDebug($"Invalid spawn at {transform.position}: {correction}");
             switch (correction)
             {
                 case CorrectionType.Wall:
@@ -47,7 +56,7 @@ public partial class XLMainItem : PhysicsProp
             for (var j = i + 1; j < realAnchors.Count; j++)
             {
                 if (Physics.Linecast(realAnchors[i], realAnchors[j], out hitInfo,
-                    StartOfRound.Instance.collidersAndRoomMaskAndDefault))
+                    HolderLinecastMask))
                 {
                     foundHit = true;
                     break;
@@ -158,7 +167,7 @@ public partial class XLMainItem : PhysicsProp
             for (var j = i + 1; j < realAnchors.Count; j++)
             {
                 if (Physics.Linecast(realAnchors[i], realAnchors[j],
-                    StartOfRound.Instance.collidersAndRoomMaskAndDefault))
+                    HolderLinecastMask))
                 {
                     Plugin.Logger.LogDebug($"Wall between anchors: {realAnchors[i]}, {realAnchors[j]}");
                     correction = CorrectionType.Wall;
