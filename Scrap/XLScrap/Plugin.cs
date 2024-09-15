@@ -87,6 +87,8 @@ public class Plugin : BaseUnityPlugin
         {
             case "CRT TV":
                 return Config.CrtTvSpawnWeight.Value;
+            case "Couch":
+                return Config.CouchSpawnWeight.Value;
             case "L Couch":
                 return Config.LCouchSpawnWeight.Value;
             case "XL Holder":

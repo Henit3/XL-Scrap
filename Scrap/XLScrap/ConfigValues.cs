@@ -7,6 +7,7 @@ namespace XlScrap;
 public class ConfigValues
 {
     public ConfigEntry<string> CrtTvSpawnWeight { get; private set; }
+    public ConfigEntry<string> CouchSpawnWeight { get; private set; }
     public ConfigEntry<string> LCouchSpawnWeight { get; private set; }
 
     public ConfigValues(ConfigFile configFile)
@@ -16,6 +17,13 @@ public class ConfigValues
             "CRT TV",
             "Vanilla:50, Custom:50",
             "Spawn Weight of CRT TV specified as comma-separated \"key:weight\" pairs"
+        );
+
+        CouchSpawnWeight = configFile.Bind(
+            "Spawn Weights",
+            "Couch",
+            "Vanilla:50, Custom:50",
+            "Spawn Weight of Couch specified as comma-separated \"key:weight\" pairs"
         );
 
         LCouchSpawnWeight = configFile.Bind(
