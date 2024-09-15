@@ -1,3 +1,7 @@
 # 0.1.0
-- Added CRT TV as a XLScrap example
-- Added L Couch as a 3 anchored XLScrap example (currently dysfunctional until the API gets updated)
+- Added CRT TV as a XL Scrap example
+- Added L Couch as a 3 anchored XL Scrap example (currently dysfunctional until the API gets updated)
+
+# 0.1.1
+- Added Couch
+- Increased scrap value of all XL Scrap
