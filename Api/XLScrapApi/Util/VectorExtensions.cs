@@ -12,9 +12,10 @@ public static class VectorExtensions
     public static Vector3 Average(this IEnumerable<Vector3> vectors)
         => vectors.Sum() / vectors.Count();
 
-    public static Vector3? FloorVector(this Vector3 vector)
-        => Physics.Raycast(vector, Vector3.down, out var hit, 1000f,
-                    StartOfRound.Instance.collidersAndRoomMaskAndDefault)
+    // collidersAndRoomMaskAndDefault doesn't work for some reason
+    public static Vector3? FloorVector(this Vector3 vector, float maxRange = 5f)
+        => Physics.Raycast(vector, Vector3.down, out var hit, maxRange,
+                    StartOfRound.Instance.walkableSurfacesMask)
                 ? hit.point
                 : null;
 }

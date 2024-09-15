@@ -99,17 +99,25 @@ public partial class XLMainItem : PhysicsProp
     {
         IsTeleporting = true;
 
+        Plugin.Logger.LogDebug($"Attempting to teleport XL Scrap: {transform.position}");
         // Try teleport and correct to a valid position
         var originalPosition = transform.position;
-        SetPositionWithHolders(teleport.exitPoint.transform.position
+
+        // Fire exits are bugged in vanilla so we need to flip when entering through these
+        var awayFromExit = teleport.exitPoint.forward.normalized;
+        if (teleport.isEntranceToBuilding && teleport.entranceId > 0) awayFromExit *= -1;
+
+        SetPositionWithHolders(teleport.exitPoint.position
             + new Vector3(0f, 2f, 0f)
-            + (teleport.exitPoint.transform.forward.normalized * Anchors.Max(x => x.magnitude)));
+            + (awayFromExit * (Anchors.Max(x => x.magnitude) + 1f)));
         var success = CorrectToValidPosition();
 
         if (!success)
         {
+            Plugin.Logger.LogDebug($"Failed to teleport XL Scrap: {transform.position}");
             // If unable to teleport the item, reset back to the original location
             SetPositionWithHolders(originalPosition);
+            Plugin.Logger.LogDebug($"Reset to: {transform.position}");
             IsTeleporting = false;
             return;
         }

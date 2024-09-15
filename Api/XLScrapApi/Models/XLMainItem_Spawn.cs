@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using XLScrapApi.Util;
@@ -9,10 +9,7 @@ public partial class XLMainItem : PhysicsProp
 {
     private const float MaxSpawnDiff = 20f;
     private const int MaxFailedCorrectionAttempts = 3;
-    private static int HolderLinecastMask
-    {
-        get => StartOfRound.Instance.collidersAndRoomMaskAndDefault;
-    }
+    private static int HolderLinecastMask => StartOfRound.Instance.collidersAndRoomMaskAndDefault;
 
     public bool CorrectToValidPosition()
     {
@@ -25,10 +22,10 @@ public partial class XLMainItem : PhysicsProp
 
             if (CheckValidPosition(realAnchors, out var correction))
             {
-                Plugin.Logger.LogDebug($"Valid spawn at {transform.position}");
+                Plugin.Logger.LogDebug($"Valid position at {transform.position}");
                 return true;
             }
-            Plugin.Logger.LogDebug($"Invalid spawn at {transform.position}: {correction}");
+            Plugin.Logger.LogDebug($"Invalid position at {transform.position}: {correction}");
             switch (correction)
             {
                 case CorrectionType.Wall:
@@ -135,7 +132,7 @@ public partial class XLMainItem : PhysicsProp
             var anchorFloorDot = Vector3.Dot(floorDirection, anchorMain);
             if (floor == null)
             {
-                if (anchorFloorDot > maxNonFloorDot) maxNonFloorDot = anchorFloorDot;
+                if (anchorFloorDot < maxNonFloorDot) maxNonFloorDot = anchorFloorDot;
             }
             else
             {
