@@ -66,6 +66,14 @@ public partial class XLMainItem : PhysicsProp
         grabbable = false;
         grabbableToEnemies = false;
         gameObject.layer = LayerMask.NameToLayer("Ignore Raycast");
+        if (!Plugin.Config.XlItemCollision.Value) SetCollision(false);
+    }
+
+    private void SetCollision(bool value)
+    {
+        var colliders = gameObject.GetComponentsInChildren<Collider>();
+        if (colliders == null) return;
+        foreach (var collider in colliders) collider.enabled = value;
     }
 
     private void InitialiseHoldersServer()
