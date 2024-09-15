@@ -4,7 +4,7 @@
     <AssemblyName>XLScrapApi</AssemblyName>
     <Product>XL Scrap API</Product>
     <Description>API to add scrap too heavy for an employee to manage alone!</Description>
-    <Version>0.1.0</Version>
+    <Version>0.1.1</Version>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <LangVersion>latest</LangVersion>
     <Authors>Henit3</Authors>

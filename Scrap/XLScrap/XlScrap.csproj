@@ -4,7 +4,7 @@
     <AssemblyName>XLScrap</AssemblyName>
     <Product>XL Scrap</Product>
     <Description>Adds example XL Scrap</Description>
-    <Version>0.1.0</Version>
+    <Version>0.1.1</Version>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <LangVersion>latest</LangVersion>
     <Authors>Henit3</Authors>
