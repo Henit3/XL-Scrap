@@ -15,7 +15,7 @@ public static class VectorExtensions
     // collidersAndRoomMaskAndDefault doesn't work for some reason
     public static Vector3? FloorVector(this Vector3 vector, float maxRange = 5f)
         => Physics.Raycast(vector, Vector3.down, out var hit, maxRange,
-                    StartOfRound.Instance.walkableSurfacesMask)
+                    StartOfRound.Instance.walkableSurfacesMask ^ 2048)
                 ? hit.point
                 : null;
 }

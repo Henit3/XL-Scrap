@@ -9,7 +9,8 @@ public partial class XLMainItem : PhysicsProp
 {
     private const float MaxSpawnDiff = 20f;
     private const int MaxFailedCorrectionAttempts = 3;
-    private static int HolderLinecastMask => StartOfRound.Instance.collidersAndRoomMaskAndDefault;
+    // Cannot make this a constant while still referring to StartOfRound.Instance
+    private static int HolderLinecastMask => StartOfRound.Instance.collidersAndRoomMaskAndDefault ^ 2048;
 
     public bool CorrectToValidPosition()
     {
