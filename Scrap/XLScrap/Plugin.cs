@@ -70,53 +70,82 @@ public class Plugin : BaseUnityPlugin
 
         foreach (ExtendedItem extendedItem in extendedMod.ExtendedItems)
         {
-            string configValueForItem = GetConfigValueForItem(extendedItem.Item.itemName);
-            if (!string.IsNullOrEmpty(configValueForItem))
+            if (extendedItem.Item.itemName == "XL Holder") continue;
+
+            var configSpawnWeightForItem = GetConfigSpawnWeightForItem(extendedItem.Item.itemName);
+            if (configSpawnWeightForItem != null)
             {
-                List<StringWithRarity> collection = ConfigParsing(configValueForItem);
-                extendedItem.LevelMatchingProperties.levelTags.AddRange(collection);
-                extendedItem.LevelMatchingProperties.planetNames.AddRange(collection);
+                extendedItem.LevelMatchingProperties.levelTags.AddRange(configSpawnWeightForItem);
+                extendedItem.LevelMatchingProperties.planetNames.AddRange(configSpawnWeightForItem);
                 Logger.LogInfo($"Updated matching properties for {extendedItem.Item}.");
             }
-        }
-    }
 
-    private static string GetConfigValueForItem(string itemName)
-    {
-        switch (itemName)
-        {
-            case "CRT TV":
-                return Config.CrtTvSpawnWeight.Value;
-            case "Couch":
-                return Config.CouchSpawnWeight.Value;
-            case "L Couch":
-                return Config.LCouchSpawnWeight.Value;
-            case "XL Holder":
-                return null;
-			default:
-				Logger.LogInfo("No configuration found for item type: " + itemName);
-				return null;
-		}
-	}
-
-	private static List<StringWithRarity> ConfigParsing(string configMoonRarity)
-    {
-        var list = new List<StringWithRarity>();
-        foreach (string item in configMoonRarity?.Split(",") ?? [])
-        {
-            var array = item.Trim().Split(":");
-            if (array.Length == 2)
+            var configValueRange = GetConfigValueRangeForItem(extendedItem.Item.itemName);
+            if (configValueRange is var (configMin, configMax))
             {
-                var text = array[0];
-                if (int.TryParse(array[1], out var result))
-                {
-                    list.Add(new StringWithRarity(text, result));
-                    Logger.LogInfo($"Registered spawn rate for {text} to {result}");
-                }
+                extendedItem.Item.minValue = (int)(configMin / 0.4);
+                extendedItem.Item.maxValue = (int)(configMax / 0.4);
+                Logger.LogInfo($"Updated value range properties for {extendedItem.Item}.");
             }
         }
-        return list;
     }
+
+    private static List<StringWithRarity> GetConfigSpawnWeightForItem(string itemName)
+    {
+        var configSpawnWeight = itemName switch
+        {
+            "CRT TV" => Config.CrtTvSpawnWeight.Value,
+            "Couch" => Config.CouchSpawnWeight.Value,
+            "L Couch" => Config.LCouchSpawnWeight.Value,
+            _ => null
+        };
+        if (configSpawnWeight == null)
+        {
+            Logger.LogWarning("No spawn weight configuration found for item type: " + itemName);
+            return null;
+        }
+
+        var list = new List<StringWithRarity>();
+        foreach (string item in configSpawnWeight.Split(','))
+        {
+            var array = item.Trim().Split(':');
+            if (array.Length != 2) continue;
+
+            if (!int.TryParse(array[1], out var result)) continue;
+            var text = array[0];
+
+            list.Add(new(text, result));
+            Logger.LogInfo($"Registered spawn rate for {text} to {result}");
+        }
+        return list;
+	}
+
+    private static (int Min, int Max)? GetConfigValueRangeForItem(string itemName)
+    {
+        var configValueRange = itemName switch
+        {
+            "CRT TV" => Config.CrtTvValueRange.Value,
+            "Couch" => Config.CouchValueRange.Value,
+            "L Couch" => Config.LCouchValueRange.Value,
+            _ => null
+        };
+        if (configValueRange == null)
+        {
+            Logger.LogWarning("No value range configuration found for item type: " + itemName);
+            return null;
+        }
+
+        var values = configValueRange.Split('-');
+        if (values.Length != 2
+            || !int.TryParse(values[0].Trim(), out var min)
+            || !int.TryParse(values[1].Trim(), out var max)
+            || min > max)
+        {
+            return null;
+        }
+
+        return (min, max);
+	}
 
     private static void OnLethalBundleLoaded(AssetBundle assetBundle)
     {
