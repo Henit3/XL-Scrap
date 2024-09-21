@@ -12,11 +12,13 @@ public class ConfigValues
     public ConfigEntry<string> CouchValueRange { get; private set; }
     public ConfigEntry<string> LCouchSpawnWeight { get; private set; }
     public ConfigEntry<string> LCouchValueRange { get; private set; }
+    public ConfigEntry<bool> SensibleSpawns { get; private set; }
 
     public ConfigValues(ConfigFile configFile)
     {
         BindSpawnWeights(configFile);
         BindScrapValues(configFile);
+        BindMisc(configFile);
 
         ClearUnusedEntries(configFile);
     }
@@ -64,6 +66,17 @@ public class ConfigValues
             "L Couch",
             "280-360",
             "Scrap Value of L Couch (UNFINISHED) specified as a \"min-max\" range"
+        );
+    }
+    
+    private void BindMisc(ConfigFile configFile)
+    {
+        const string Category = "Miscellaneous";
+
+        SensibleSpawns = configFile.Bind(Category,
+            "Sensible Spawn Positions",
+            true,
+            "Whether these items should make use of two handed spawn positions"
         );
     }
 
