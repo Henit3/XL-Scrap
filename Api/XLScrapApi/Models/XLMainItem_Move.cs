@@ -101,7 +101,7 @@ public partial class XLMainItem : PhysicsProp
         {
             IsTeleporting = false;
             Plugin.Logger.LogWarning($"Failed to teleport XL Scrap:");
-            HUDManager.Instance.DisplayStatusEffect("Insufficient space detected for XL Scrap on other side");
+            NotifyTeleportFailClientRpc(playerObj);
             return;
         }
 
@@ -122,6 +122,7 @@ public partial class XLMainItem : PhysicsProp
         var teleport = teleportNetObj.gameObject.GetComponent<EntranceTeleport>();
 
         transform.position = xlMainPos;
+        isInFactory = teleport.isEntranceToBuilding;
 
         if (HolderItems == null || HolderItems.Length < xlHoldersPos.Length) return;
 
@@ -133,6 +134,7 @@ public partial class XLMainItem : PhysicsProp
             holder.DropOnClient();
             
             holder.transform.position = xlHoldersPos[i];
+            holder.isInFactory = teleport.isEntranceToBuilding;
             holder.startFallingPosition = holder.transform.localPosition;
             holder.FallToGround();
         }
@@ -155,7 +157,16 @@ public partial class XLMainItem : PhysicsProp
         foreach (var item in localPlayer.ItemSlots)
         {
             if (item == null) continue;
+
             item.isInFactory = teleport.isEntranceToBuilding;
         }
+    }
+
+    [ClientRpc]
+    public void NotifyTeleportFailClientRpc(int playerObj)
+    {
+        if (playerObj != (int)GameNetworkManager.Instance.localPlayerController.playerClientId) return;
+
+        HUDManager.Instance.DisplayStatusEffect("Insufficient space detected for XL Scrap on other side");
     }
 }
