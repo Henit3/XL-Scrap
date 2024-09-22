@@ -139,6 +139,9 @@ public partial class XLMainItem : PhysicsProp
             holder.FallToGround();
         }
 
+        // To refresh for cullFactory
+        EnableItemMeshes(true);
+
         // Update overrides base player teleportation so do it again
         StartOfRound.Instance.allPlayerScripts[playerObj].TeleportPlayer(
             teleport.exitPoint.transform.position,
