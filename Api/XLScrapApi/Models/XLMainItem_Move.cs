@@ -21,8 +21,8 @@ public partial class XLMainItem : PhysicsProp
     {
         transform.position = destVector;
 
+        if (HolderItems == null) return;
         var holderPositions = XLPositionUtils.GetHolderPositionsAt(Anchors, destVector);
-        if (holderPositions == null) return;
 
         for (var i = 0; i < HolderItems.Length; i++)
         {
@@ -99,8 +99,9 @@ public partial class XLMainItem : PhysicsProp
 
         if (!success)
         {
-            Plugin.Logger.LogWarning($"Failed to teleport XL Scrap:");
             IsTeleporting = false;
+            Plugin.Logger.LogWarning($"Failed to teleport XL Scrap:");
+            HUDManager.Instance.DisplayStatusEffect("Insufficient space detected for XL Scrap on other side");
             return;
         }
 

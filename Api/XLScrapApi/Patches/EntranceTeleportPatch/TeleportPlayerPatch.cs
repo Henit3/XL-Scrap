@@ -3,7 +3,6 @@ using HarmonyLib;
 using System.Collections.Generic;
 using System.Reflection.Emit;
 using Unity.Netcode;
-using XLScrapApi.Util;
 
 namespace XLScrapApi.Patches.EntranceTeleportPatch;
 
@@ -25,6 +24,7 @@ public class TeleportPlayerPatch : TeleportPlayerBase
     {
         var matcher = new CodeMatcher(instructions);
 
+        // Match when we have met conditions for teleportation
         matcher.MatchForward(false, [new(OpCodes.Ldarg_0)]);
         matcher.Advance(1);
         matcher.MatchForward(false, [new(OpCodes.Ldarg_0)]);
@@ -34,6 +34,7 @@ public class TeleportPlayerPatch : TeleportPlayerBase
         var normalTeleportTarget = generator.DefineLabel();
         matcher.AddLabelsAt(matcher.Pos, [normalTeleportTarget]);
 
+        // if (HandleXlTeleport(this, GameNetworkManager.Instance.localPlayerController)) return;
         matcher.InsertAndAdvance([
             new(OpCodes.Ldarg_0),       // this
             new(OpCodes.Call,           // GameNetworkManager.Instance
@@ -46,8 +47,6 @@ public class TeleportPlayerPatch : TeleportPlayerBase
                 normalTeleportTarget),
             new(OpCodes.Ret)            // return
         ]);
-
-        Plugin.Logger.LogDebugInstructionsFrom(matcher);
 
         return matcher.InstructionEnumeration();
     }
