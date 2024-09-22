@@ -5,3 +5,8 @@
 # 0.1.1
 - Added Couch
 - Increased scrap value of all XL Scrap
+
+# 0.2.0
+- Increased scrap value of all XL Scrap again
+- Added config to adjust each of the scraps' values
+- Added config to spawn them in sensible locations (i.e. those used for two-handed scrap)

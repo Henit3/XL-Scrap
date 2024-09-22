@@ -1,11 +1,11 @@
 {
   "name": "XL_Scrap",
-  "version_number": "0.1.1",
+  "version_number": "0.2.0",
   "website_url": "https://github.com/Henit3/XL-Scrap",
   "description": "Adds example scrap too heavy for an employee to manage alone!",
   "dependencies": [
     "BepInEx-BepInExPack-5.4.2100",
     "IAmBatby-LethalLevelLoader-1.3.10",
-    "necrowing-XL_Scrap_Api-0.1.0"
+    "necrowing-XL_Scrap_Api-0.2.0"
   ]
 }

@@ -40,6 +40,11 @@ This means you may need to choose your first holder point carefully, or will nee
 
 To see a tutorial and example of XL Scrap being added by this mod, check out the `XL Scrap`.
 
+### Known Bugs
+- XL Items remain on the ship (potentially in a bugged state) on squad wipe
+- XL Items' scan nodes aren't always visible
+- Using an entrance/exit may clip the XL Item into a wall - re-entering with it can fix this
+
 ### Credits
 
 - XL Holder Model:

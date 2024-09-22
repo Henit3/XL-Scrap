@@ -1,6 +1,6 @@
 {
   "name": "XL_Scrap_Api",
-  "version_number": "0.1.1",
+  "version_number": "0.2.0",
   "website_url": "https://github.com/Henit3/XL-Scrap",
   "description": "API to add scrap too heavy for an employee to manage alone!",
   "dependencies": [
