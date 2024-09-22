@@ -2,6 +2,7 @@
 using System.Linq;
 using Unity.Netcode;
 using UnityEngine;
+using XLScrapApi.Util;
 
 namespace XLScrapApi.Models;
 
@@ -194,7 +195,7 @@ public partial class XLMainItem : PhysicsProp
             HolderItems[itemId] = holderItem;
         }
 
-        transform.position = GetPositionFromHolders(HolderItems.Select(x => x.transform.position).ToArray());
+        transform.position = XLPositionUtils.GetPositionFromHolders(Anchors, HolderItems.Select(x => x.transform.position).ToArray());
         var anchorCorrection = Quaternion.FromToRotation(Anchors[0], HolderItems[0].transform.position - transform.position);
         RotateAnchors(anchorCorrection);
         var rotation = GetAnchorRotationOffset();

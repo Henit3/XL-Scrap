@@ -1,50 +1,58 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using XLScrapApi.Util;
+using XLScrapApi.Models;
 
-namespace XLScrapApi.Models;
+namespace XLScrapApi.Util;
 
-public partial class XLMainItem : PhysicsProp
+public static class XLSpawner
 {
     private const float MaxSpawnDiff = 20f;
     private const int MaxFailedCorrectionAttempts = 3;
     // Cannot make this a constant while still referring to StartOfRound.Instance
     private static int HolderLinecastMask => StartOfRound.Instance.collidersAndRoomMaskAndDefault ^ 2048;
 
-    public bool CorrectToValidPosition()
+    public static bool CorrectToValidPosition(XLMainItem xlMain, Vector3? location = null)
     {
-        var originalPosition = transform.position;
+        var xlItem = new XLSimpleMainItem(xlMain);
+        if (location.HasValue)
+        {
+            xlItem.Position = location.Value;
+            xlItem.HolderPositions = XLPositionUtils.GetHolderPositionsAt(xlItem.Anchors, location.Value);
+        }
+
         for (var failedCorrectionAttempts = 0;
             failedCorrectionAttempts < MaxFailedCorrectionAttempts;
             failedCorrectionAttempts++)
         {
-            var realAnchors = Anchors.Select(a => a + transform.position).ToList();
+            var realAnchors = xlItem.Anchors.Select(a => a + xlItem.Position).ToList();
 
-            if (CheckValidPosition(realAnchors, out var correction))
+            if (CheckValidPosition(xlItem, realAnchors, out var correction))
             {
-                Plugin.Logger.LogDebug($"Valid position at {transform.position}");
+                // Set correct position only on success
+                xlMain.SetPositionWithHolders(xlItem.Position);
+
+                Plugin.Logger.LogDebug($"Valid position at {xlItem.Position}");
                 return true;
             }
-            Plugin.Logger.LogDebug($"Invalid position at {transform.position}: {correction}");
+            Plugin.Logger.LogDebug($"Invalid position at {xlItem.Position}: {correction}");
             switch (correction)
             {
                 case CorrectionType.Wall:
-                    CorrectValidWallPosition(realAnchors);
+                    CorrectValidWallPosition(xlItem, realAnchors);
                     break;
                 case CorrectionType.Floor:
-                    CorrectValidFloorPosition(realAnchors);
+                    CorrectValidFloorPosition(xlItem, realAnchors);
                     break;
                 default:
                     Plugin.Logger.LogWarning("Invalid position without correction type specified!");
                     break;
             }
         }
-        SetPositionWithHolders(originalPosition);
         return false;
     }
 
-    private void CorrectValidWallPosition(List<Vector3> realAnchors)
+    private static void CorrectValidWallPosition(XLSimpleMainItem xlItem, List<Vector3> realAnchors)
     {
         // Use intersection point to determine wall normal and hitpoint
         RaycastHit hitInfo = new();
@@ -93,10 +101,12 @@ public partial class XLMainItem : PhysicsProp
             (var pos, var neg) => pos > neg ? neg : pos
         };
 
-        ShiftPositionWithHolders(shiftDotDistance * hitInfo.normal);
+        var shiftVector = shiftDotDistance * hitInfo.normal;
+        xlItem.Position += shiftVector;
+        xlItem.HolderPositions = XLPositionUtils.GetHoldersPositionsOnShift(xlItem.HolderPositions, shiftVector);
     }
 
-    private void CorrectValidFloorPosition(List<Vector3> realAnchors)
+    private static void CorrectValidFloorPosition(XLSimpleMainItem xlItem, List<Vector3> realAnchors)
     {
         // Average floored anchors' differences from the main point for shift direction
         var nullableFlooredAnchors = realAnchors.Select(x => x.FloorVector()).ToList();
@@ -104,9 +114,12 @@ public partial class XLMainItem : PhysicsProp
         // Shift by a bit more than the maxAnchorDistance in random vector if no floor around the item
         if (nullableFlooredAnchors.All(x => x == null))
         {
-            var maxAnchorDistance = Anchors.Max(a => a.magnitude);
-            ShiftPositionWithHolders((Vector3)Random.insideUnitCircle.normalized * (maxAnchorDistance + 1f));
-            Plugin.Logger.LogDebug($"Correcting floor (RANDOM END): {transform.position}");
+            var maxAnchorDistance = xlItem.Anchors.Max(a => a.magnitude);
+
+            var randomShiftVector = (Vector3)Random.insideUnitCircle.normalized * (maxAnchorDistance + 1f);
+            xlItem.Position += randomShiftVector;
+            xlItem.HolderPositions = XLPositionUtils.GetHoldersPositionsOnShift(xlItem.HolderPositions, randomShiftVector);
+            Plugin.Logger.LogDebug($"Correcting floor (RANDOM END): {xlItem.Position}");
             return;
         }
 
@@ -116,7 +129,7 @@ public partial class XLMainItem : PhysicsProp
             var flooredAnchor = nullableFlooredAnchors[i];
             if (flooredAnchor == null) continue;
 
-            floorDirection += Anchors[i];
+            floorDirection += xlItem.Anchors[i];
         }
         floorDirection.Normalize();
 
@@ -129,7 +142,7 @@ public partial class XLMainItem : PhysicsProp
             var anchor = realAnchors[i];
             var floor = nullableFlooredAnchors[i];
 
-            var anchorMain = anchor - transform.position;
+            var anchorMain = anchor - xlItem.Position;
             var anchorFloorDot = Vector3.Dot(floorDirection, anchorMain);
             if (floor == null)
             {
@@ -145,18 +158,20 @@ public partial class XLMainItem : PhysicsProp
         if (minFloorDot == float.MaxValue) minFloorDot = 0;
 
         var shiftMagnitude = System.Math.Abs(maxNonFloorDot) + System.Math.Abs(minFloorDot);
-        ShiftPositionWithHolders(floorDirection * shiftMagnitude);
+        var shiftVector = floorDirection * shiftMagnitude;
+        xlItem.Position += shiftVector;
+        xlItem.HolderPositions = XLPositionUtils.GetHoldersPositionsOnShift(xlItem.HolderPositions, floorDirection * shiftMagnitude);
     }
 
-    private bool CheckValidPosition(List<Vector3> realAnchors, out CorrectionType? correction)
+    private static bool CheckValidPosition(XLSimpleMainItem xlItem, List<Vector3> realAnchors, out CorrectionType? correction)
     {
-        if (!CheckAnchorIntersections(realAnchors, out correction)
-            || !CheckFloorPositions(realAnchors, out correction)) return false;
+        if (!CheckAnchorIntersections(xlItem, realAnchors, out correction)
+            || !CheckFloorPositions(xlItem, realAnchors, out correction)) return false;
 
         return true;
     }
 
-    private bool CheckAnchorIntersections(List<Vector3> realAnchors, out CorrectionType? correction)
+    private static bool CheckAnchorIntersections(XLSimpleMainItem xlItem, List<Vector3> realAnchors, out CorrectionType? correction)
     {
         correction = null;
 
@@ -177,15 +192,15 @@ public partial class XLMainItem : PhysicsProp
         return true;
     }
 
-    private bool CheckFloorPositions(List<Vector3> realAnchors, out CorrectionType? correction)
+    private static bool CheckFloorPositions(XLSimpleMainItem xlItem, List<Vector3> realAnchors, out CorrectionType? correction)
     {
         correction = null;
 
-        var floorPosition = transform.position.FloorVector();
+        var floorPosition = xlItem.Position.FloorVector();
         if (floorPosition == null
-            || Vector3.Distance(floorPosition.Value, transform.position) > MaxSpawnDiff)
+            || Vector3.Distance(floorPosition.Value, xlItem.Position) > MaxSpawnDiff)
         {
-            Plugin.Logger.LogDebug($"Main floor not good: {transform.position} -> {floorPosition}");
+            Plugin.Logger.LogDebug($"Main floor not good: {xlItem.Position} -> {floorPosition}");
             correction = CorrectionType.Floor;
             return false;
         }
@@ -201,11 +216,11 @@ public partial class XLMainItem : PhysicsProp
         }
         var flooredAnchors = nullableFlooredAnchors.Select(a => a.Value).ToList();
 
-        var newPosition = GetPositionFromHolders(flooredAnchors);
+        var newPosition = XLPositionUtils.GetPositionFromHolders(xlItem.Anchors, flooredAnchors);
 
-        if (Vector3.Distance(newPosition, transform.position) > MaxSpawnDiff)
+        if (Vector3.Distance(newPosition, xlItem.Position) > MaxSpawnDiff)
         {
-            Plugin.Logger.LogDebug($"New position too far away: {transform.position} -> {newPosition}");
+            Plugin.Logger.LogDebug($"New position too far away: {xlItem.Position} -> {newPosition}");
             correction = CorrectionType.Floor;
             return false;
         }
@@ -214,7 +229,7 @@ public partial class XLMainItem : PhysicsProp
         for (var i = 0; i < flooredAnchors.Count; i++)
         {
             var dist = Vector3.Distance(newPosition, flooredAnchors[i]);
-            if (dist > Anchors[i].magnitude + (Plugin.Config.MaxHolderRadius.Value / 2))
+            if (dist > xlItem.Anchors[i].magnitude + (Plugin.Config.MaxHolderRadius.Value / 2))
             {
                 Plugin.Logger.LogDebug($"Floored anchor too far away ({dist}): {newPosition} <-> {flooredAnchors[i]}");
                 correction = CorrectionType.Floor;

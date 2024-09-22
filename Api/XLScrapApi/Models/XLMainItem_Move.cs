@@ -17,6 +17,19 @@ public partial class XLMainItem : PhysicsProp
                 .Average();
     }
 
+    public void SetPositionWithHolders(Vector3 destVector)
+    {
+        transform.position = destVector;
+
+        var holderPositions = XLPositionUtils.GetHolderPositionsAt(Anchors, destVector);
+        if (holderPositions == null) return;
+
+        for (var i = 0; i < HolderItems.Length; i++)
+        {
+            HolderItems[i].transform.position = holderPositions[i];
+        }
+    }
+
     /* STUB:
      * Implement shift action properly by shifting XlMain and holder by player movement direction
      * Could potentially also involve rotations around other holders
@@ -50,28 +63,6 @@ public partial class XLMainItem : PhysicsProp
         player.sprintMeter -= Time.deltaTime * 0.1f;
     }*/
 
-    private void ShiftPositionWithHolders(Vector3 shiftVector)
-    {
-        transform.position += shiftVector;
-        if (HolderItems == null) return;
-
-        foreach (var holder in HolderItems)
-        {
-            holder.transform.position += shiftVector;
-        }
-    }
-
-    public void SetPositionWithHolders(Vector3 destVector)
-    {
-        transform.position = destVector;
-        if (HolderItems == null) return;
-
-        for (var i = 0; i < HolderItems.Length; i++)
-        {
-            HolderItems[i].transform.position = transform.position + Anchors[i];
-        }
-    }
-
     [ServerRpc(RequireOwnership = false)]
     public void SetOnCounterServerRpc(Vector3 counterPos) => SetOnCounterClientRpc(counterPos);
     [ClientRpc]
@@ -86,46 +77,36 @@ public partial class XLMainItem : PhysicsProp
         targetFloorPosition = counterPos;
     }
 
-    public Vector3 GetPositionFromHolders(IList<Vector3> holdersPos)
+    [ServerRpc(RequireOwnership = false)]
+    public void TeleportXlScrapServerRpc(NetworkObjectReference teleportNetRef, int playerObj)
     {
-        return Enumerable.Range(0, holdersPos.Count)
-            .Select(i => holdersPos[i] - Anchors[i])
-            .Average();
-    }
+        if (!teleportNetRef.TryGet(out var teleportNetObj, null)) return;
+        var teleport = teleportNetObj.gameObject.GetComponent<EntranceTeleport>();
 
-    // If we fail, we don't teleport the player since we stop this
-    // We may want to teleport them still in this case (use an RPC to sync across all clients)
-    public void TeleportXlScrapServer(EntranceTeleport teleport, int playerObj)
-    {
         IsTeleporting = true;
 
-        Plugin.Logger.LogDebug($"Attempting to teleport XL Scrap: {transform.position}");
         // Try teleport and correct to a valid position
-        var originalPosition = transform.position;
+        Plugin.Logger.LogDebug($"Attempting to teleport XL Scrap: {transform.position}");
 
         // Fire exits are bugged in vanilla so we need to flip when entering through these
         var awayFromExit = teleport.exitPoint.forward.normalized;
         if (teleport.isEntranceToBuilding && teleport.entranceId > 0) awayFromExit *= -1;
 
-        SetPositionWithHolders(teleport.exitPoint.position
+        var teleportPosition = teleport.exitPoint.position
             + new Vector3(0f, 2f, 0f)
-            + (awayFromExit * (Anchors.Max(x => x.magnitude) + 1f)));
-        var success = CorrectToValidPosition();
+            + (awayFromExit * (Anchors.Max(x => x.magnitude) + 1f));
+        var success = XLSpawner.CorrectToValidPosition(this, teleportPosition);
 
         if (!success)
         {
-            Plugin.Logger.LogDebug($"Failed to teleport XL Scrap: {transform.position}");
-            // If unable to teleport the item, reset back to the original location
-            SetPositionWithHolders(originalPosition);
-            Plugin.Logger.LogDebug($"Reset to: {transform.position}");
+            Plugin.Logger.LogWarning($"Failed to teleport XL Scrap:");
             IsTeleporting = false;
             return;
         }
 
         TeleportWithXlScrapClientRpc(
             playerObj,
-            teleport.exitPoint.transform.position,
-            teleport.exitPoint.eulerAngles.y,
+            teleportNetRef,
             transform.position,
             HolderItems.Select(x => x.transform.position).ToArray()
         );
@@ -133,9 +114,12 @@ public partial class XLMainItem : PhysicsProp
 
     [ClientRpc]
     public void TeleportWithXlScrapClientRpc(int playerObj,
-        Vector3 teleportPos, float teleportRot,
+        NetworkObjectReference teleportNetRef,
         Vector3 xlMainPos, Vector3[] xlHoldersPos)
     {
+        if (!teleportNetRef.TryGet(out var teleportNetObj, null)) return;
+        var teleport = teleportNetObj.gameObject.GetComponent<EntranceTeleport>();
+
         transform.position = xlMainPos;
 
         if (HolderItems == null || HolderItems.Length < xlHoldersPos.Length) return;
@@ -153,9 +137,24 @@ public partial class XLMainItem : PhysicsProp
         }
 
         // Update overrides base player teleportation so do it again
-        StartOfRound.Instance.allPlayerScripts[playerObj]
-            .TeleportPlayer(teleportPos, withRotation: true, teleportRot);
+        StartOfRound.Instance.allPlayerScripts[playerObj].TeleportPlayer(
+            teleport.exitPoint.transform.position,
+            withRotation: true,
+            teleport.exitPoint.eulerAngles.y
+        );
 
         IsTeleporting = false;
+
+        if (playerObj != (int)GameNetworkManager.Instance.localPlayerController.playerClientId) return;
+
+        var localPlayer = GameNetworkManager.Instance.localPlayerController;
+        localPlayer.isInElevator = false;
+        localPlayer.isInHangarShipRoom = false;
+        localPlayer.isInsideFactory = teleport.isEntranceToBuilding;
+        foreach (var item in localPlayer.ItemSlots)
+        {
+            if (item == null) continue;
+            item.isInFactory = teleport.isEntranceToBuilding;
+        }
     }
 }

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection.Emit;
 using UnityEngine;
 using XLScrapApi.Models;
+using XLScrapApi.Util;
 
 namespace XLScrapApi.Patches.RoundManagerPatch;
 
@@ -26,7 +27,7 @@ public class SpawnScrapInLevelPatch
     private static bool HandleXlSpawn(GrabbableObject component)
     {
         if (component is not XLMainItem xlItem) return true;
-        if (!xlItem.CorrectToValidPosition()) return InvalidateXlSpawn(component);
+        if (!XLSpawner.CorrectToValidPosition(xlItem)) return InvalidateXlSpawn(component);
 
         return true;
     }
