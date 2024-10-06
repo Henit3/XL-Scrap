@@ -10,6 +10,8 @@ public class ConfigValues
     public ConfigEntry<string> CrtTvValueRange { get; private set; }
     public ConfigEntry<string> CouchSpawnWeight { get; private set; }
     public ConfigEntry<string> CouchValueRange { get; private set; }
+    public ConfigEntry<string> CoffinSpawnWeight { get; private set; }
+    public ConfigEntry<string> CoffinValueRange { get; private set; }
     public ConfigEntry<string> LCouchSpawnWeight { get; private set; }
     public ConfigEntry<string> LCouchValueRange { get; private set; }
     public ConfigEntry<bool> SensibleSpawns { get; private set; }
@@ -39,6 +41,12 @@ public class ConfigValues
             "Spawn Weight of Couch specified as comma-separated \"key:weight\" pairs"
         );
 
+        CoffinSpawnWeight = configFile.Bind(Category,
+            "Coffin",
+            "Vanilla:0, Custom:0",
+            "Spawn Weight of Coffin specified as comma-separated \"key:weight\" pairs"
+        );
+
         LCouchSpawnWeight = configFile.Bind(Category,
             "L Couch",
             "Vanilla:0, Custom:0",
@@ -60,6 +68,12 @@ public class ConfigValues
             "Couch",
             "180-260",
             "Scrap Value of Couch specified as a \"min-max\" range"
+        );
+
+        CoffinValueRange = configFile.Bind(Category,
+            "Coffin",
+            "280-360",
+            "Scrap Value of Coffin specified as a \"min-max\" range"
         );
 
         LCouchValueRange = configFile.Bind(Category,

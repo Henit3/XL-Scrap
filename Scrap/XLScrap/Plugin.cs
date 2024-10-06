@@ -96,6 +96,7 @@ public class Plugin : BaseUnityPlugin
         {
             "CRT TV" => Config.CrtTvSpawnWeight.Value,
             "Couch" => Config.CouchSpawnWeight.Value,
+            "Coffin" => Config.CoffinSpawnWeight.Value,
             "L Couch" => Config.LCouchSpawnWeight.Value,
             _ => null
         };
@@ -126,6 +127,7 @@ public class Plugin : BaseUnityPlugin
         {
             "CRT TV" => Config.CrtTvValueRange.Value,
             "Couch" => Config.CouchValueRange.Value,
+            "Coffin" => Config.CoffinValueRange.Value,
             "L Couch" => Config.LCouchValueRange.Value,
             _ => null
         };
