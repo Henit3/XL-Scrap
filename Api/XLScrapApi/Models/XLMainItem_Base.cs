@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Unity.Netcode;
 using UnityEngine;
@@ -73,7 +73,7 @@ public partial class XLMainItem : PhysicsProp
 
     private void SetCollision(bool value)
     {
-        var colliders = gameObject.GetComponentsInChildren<Collider>();
+        var colliders = gameObject.GetComponents<Collider>();
         if (colliders == null) return;
         foreach (var collider in colliders) collider.enabled = value;
     }
