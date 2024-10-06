@@ -11,15 +11,15 @@ public partial class XLMainItem : PhysicsProp
     public Vector3 GetPositionOffsetFromPoints(IList<Vector3> anchors, IList<Vector3> points)
     {
         // Position offset by the average anchor diff
-        return transform.position
+        return transform.position - PositionOffset
             + Enumerable.Range(0, anchors.Count())
-                .Select(i => points[i] - (transform.position + anchors[i]))
+                .Select(i => points[i] - (transform.position - PositionOffset + anchors[i]))
                 .Average();
     }
 
     public void SetPositionWithHolders(Vector3 destVector)
     {
-        transform.position = destVector;
+        transform.position = destVector + PositionOffset;
 
         if (HolderItems == null) return;
         var holderPositions = XLPositionUtils.GetHolderPositionsAt(Anchors, destVector);
@@ -121,7 +121,7 @@ public partial class XLMainItem : PhysicsProp
         if (!teleportNetRef.TryGet(out var teleportNetObj, null)) return;
         var teleport = teleportNetObj.gameObject.GetComponent<EntranceTeleport>();
 
-        transform.position = xlMainPos;
+        transform.position = xlMainPos + PositionOffset;
         isInFactory = teleport.isEntranceToBuilding;
 
         if (HolderItems == null || HolderItems.Length < xlHoldersPos.Length) return;

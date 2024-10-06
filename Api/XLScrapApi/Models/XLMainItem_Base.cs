@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using Unity.Netcode;
 using UnityEngine;
@@ -33,6 +33,7 @@ public partial class XLMainItem : PhysicsProp
     // Unsure if this actually makes a difference
     public bool IsTeleporting { get; private set; }
 
+    public Vector3 PositionOffset;
     public Vector3[] Anchors;
 
     private bool[] groundedInShip;
@@ -60,7 +61,7 @@ public partial class XLMainItem : PhysicsProp
         InitialiseHoldersServer();
     }
 
-    public Vector3 GetAnchor(int id) => transform.position + Anchors[id];
+    public Vector3 GetAnchor(int id) => transform.position - PositionOffset + Anchors[id];
 
     private void EnsureRequiredXlPropsSet()
     {
@@ -83,7 +84,7 @@ public partial class XLMainItem : PhysicsProp
         {
             var holderObj = Object.Instantiate(
                 HolderItemPrefab.spawnPrefab,
-                transform.position + Anchors[itemId],
+                transform.position - PositionOffset + Anchors[itemId],
                 Quaternion.identity,
                 StartOfRound.Instance.propsContainer
             );
@@ -122,7 +123,7 @@ public partial class XLMainItem : PhysicsProp
             index++;
             if (ModSaveFile.Instance.SpawnedKeys.Contains(index)) continue;
 
-            var distance = Vector3.Distance(transform.position, mainPos);
+            var distance = Vector3.Distance(transform.position - PositionOffset, mainPos);
             if (closestMainPos == null || distance < closestMainPosDist)
             {
                 closestMainPos = mainPos;
@@ -195,8 +196,9 @@ public partial class XLMainItem : PhysicsProp
             HolderItems[itemId] = holderItem;
         }
 
-        transform.position = XLPositionUtils.GetPositionFromHolders(Anchors, HolderItems.Select(x => x.transform.position).ToArray());
-        var anchorCorrection = Quaternion.FromToRotation(Anchors[0], HolderItems[0].transform.position - transform.position);
+        transform.position = XLPositionUtils.GetPositionFromHolders(Anchors, HolderItems.Select(x => x.transform.position).ToArray())
+            + PositionOffset;
+        var anchorCorrection = Quaternion.FromToRotation(Anchors[0], HolderItems[0].transform.position - transform.position - PositionOffset);
         RotateAnchors(anchorCorrection);
         var rotation = GetAnchorRotationOffset();
         RotateBase(rotation);
@@ -218,7 +220,8 @@ public partial class XLMainItem : PhysicsProp
 
         if (IsTeleporting) return;
 
-        transform.position = GetPositionOffsetFromPoints(Anchors, HolderItems.Select(x => x.transform.position).ToArray());
+        transform.position = GetPositionOffsetFromPoints(Anchors, HolderItems.Select(x => x.transform.position).ToArray())
+            + PositionOffset;
         var rotation = GetAnchorRotationOffset();
         RotateBase(rotation);
         // Janky physics occur when anchors and holders mismatch; transform.forward is reset on first update so need this
@@ -245,7 +248,7 @@ public partial class XLMainItem : PhysicsProp
     private Quaternion GetAnchorRotationOffset()
     {
         var holderPos = HolderItems[0].transform.position;
-        var vHolderMain = transform.position - holderPos;
+        var vHolderMain = transform.position - PositionOffset - holderPos;
         return Quaternion.FromToRotation(transform.forward, vHolderMain);
     }
 
